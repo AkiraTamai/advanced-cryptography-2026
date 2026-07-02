@@ -1,26 +1,26 @@
 # Week 6
 
-Week 6 のテーマは Programmable Cryptography Stack Design（zkVM / vFHE）です。
-講義で扱った「VM 抽象を支えるルックアップ論法」と「FHE の準同型性の核である LWE」を、
+Week 6 のテーマは Programmable Cryptography Stack Design（zkVM / vFHE / co-SNARK）です。
+講義で扱った「zkVM が実行を算術化する仕組み（AIR）」と「co-SNARK が使う MPC の核（秘密分散と Beaver 乗算）」を、
 実際に手を動かして実装します。
 
 Week 6 の問題は次の 2 つです。
 
-- `lookup-argument`: Rust で ZK のルックアップ／permutation 論法の核となる fingerprint（乱数点評価によるマルチ集合等価性チェック）を実装する問題
-- `lwe-toggle`: Python で LWE（Learning With Errors）ベースの 1-bit 対称鍵暗号化・復号・準同型加算を実装する問題
+- `air-trace-check`: Rust で zkVM の AIR（実行トレース → transition 制約 → boundary 制約）を実装する問題
+- `secret-share-mpc`: Python で co-SNARK が使う加法的秘密分散と Beaver 乗算プロトコルを実装する問題
 
 ## 提出先
 
-Rust の `lookup-argument` は次の場所に提出してください。
+Rust の `air-trace-check` は次の場所に提出してください。
 
 ```text
-week6/submissions/<github-username>/lookup-argument/rust/
+week6/submissions/<github-username>/air-trace-check/rust/
 ```
 
-Python の `lwe-toggle` は次の場所に提出してください。
+Python の `secret-share-mpc` は次の場所に提出してください。
 
 ```text
-week6/submissions/<github-username>/lwe-toggle/python/
+week6/submissions/<github-username>/secret-share-mpc/python/
 ```
 
 編集してよいのは次のディレクトリ以下だけです。
@@ -45,22 +45,22 @@ solution.py
 requirements.txt
 ```
 
-`lwe-toggle` はサードパーティ製パッケージを必要としません。`requirements.txt` は空（またはコメントのみ）で提出してください。
+`secret-share-mpc` はサードパーティ製パッケージを必要としません。`requirements.txt` は空（またはコメントのみ）で提出してください。
 
 ## Rust テンプレートのコピー
 
 ```bash
-mkdir -p week6/submissions/<github-username>/lookup-argument/rust
-cp -R week6/problems/lookup-argument/rust/template/. \
-  week6/submissions/<github-username>/lookup-argument/rust/
+mkdir -p week6/submissions/<github-username>/air-trace-check/rust
+cp -R week6/problems/air-trace-check/rust/template/. \
+  week6/submissions/<github-username>/air-trace-check/rust/
 ```
 
 ## Python テンプレートのコピー
 
 ```bash
-mkdir -p week6/submissions/<github-username>/lwe-toggle/python
-cp -R week6/problems/lwe-toggle/python/template/. \
-  week6/submissions/<github-username>/lwe-toggle/python/
+mkdir -p week6/submissions/<github-username>/secret-share-mpc/python
+cp -R week6/problems/secret-share-mpc/python/template/. \
+  week6/submissions/<github-username>/secret-share-mpc/python/
 ```
 
 ## ローカルテスト
@@ -68,13 +68,13 @@ cp -R week6/problems/lwe-toggle/python/template/. \
 Rust:
 
 ```bash
-bash scripts/test-rust-submission.sh week6 lookup-argument <github-username>
+bash scripts/test-rust-submission.sh week6 air-trace-check <github-username>
 ```
 
 Python:
 
 ```bash
-bash scripts/test-python-submission.sh week6 lwe-toggle <github-username>
+bash scripts/test-python-submission.sh week6 secret-share-mpc <github-username>
 ```
 
 ## Pull Request
