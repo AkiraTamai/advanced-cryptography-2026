@@ -8,3 +8,10 @@
 サンプル問題は Rust の `field-basics` と Python の `mod-arithmetic` です。
 
 まず [`week0/README.md`](week0/README.md) を読んでください。
+
+## Week 6
+
+`week6` は Programmable Cryptography Stack Design（zkVM / vFHE）の実装課題です。
+課題は Rust の `lookup-argument` と Python の `lwe-toggle` です。
+
+詳細は [`week6/README.md`](week6/README.md) を確認してください。
