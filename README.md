@@ -12,6 +12,6 @@
 ## Week 6
 
 `week6` は Programmable Cryptography Stack Design（zkVM / vFHE / co-SNARK）の実装課題です。
-課題は Rust の `air-trace-check` と Python の `secret-share-mpc` です。
+課題は Python の `co-snark-prove` と Rust の `zkvm-exploit` です。
 
 詳細は [`week6/README.md`](week6/README.md) を確認してください。

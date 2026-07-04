@@ -1,26 +1,26 @@
 # Week 6
 
 Week 6 のテーマは Programmable Cryptography Stack Design（zkVM / vFHE / co-SNARK）です。
-講義で扱った「zkVM が実行を算術化する仕組み（AIR）」と「co-SNARK が使う MPC の核（秘密分散と Beaver 乗算）」を、
-実際に手を動かして実装します。
+ZK・MPC の基礎は履修済みである前提で、この週では**それらを組み合わせて作るアプリケーション**と
+**primitive の"中で／上で"走る計算**を、実際に手を動かして実装します。
 
 Week 6 の問題は次の 2 つです。
 
-- `air-trace-check`: Rust で zkVM の AIR（実行トレース → transition 制約 → boundary 制約）を実装する問題
-- `secret-share-mpc`: Python で co-SNARK が使う加法的秘密分散と Beaver 乗算プロトコルを実装する問題
+- `co-snark-prove`: Python で、co-SNARK の証明者が **MPC 上で走らせる計算**（線形結合＋Beaver 乗算）を実装する問題。秘密分散プリミティブは支給され、その上で prover を組み立てます。
+- `zkvm-exploit`: Rust で、zkVM の**中で走る guest プログラム**（Proof of Exploit）と public/witness 設計を実装する問題。zkVM 本体は動かしません。
 
 ## 提出先
 
-Rust の `air-trace-check` は次の場所に提出してください。
+Python の `co-snark-prove` は次の場所に提出してください。
 
 ```text
-week6/submissions/<github-username>/air-trace-check/rust/
+week6/submissions/<github-username>/co-snark-prove/python/
 ```
 
-Python の `secret-share-mpc` は次の場所に提出してください。
+Rust の `zkvm-exploit` は次の場所に提出してください。
 
 ```text
-week6/submissions/<github-username>/secret-share-mpc/python/
+week6/submissions/<github-username>/zkvm-exploit/rust/
 ```
 
 編集してよいのは次のディレクトリ以下だけです。
@@ -31,13 +31,6 @@ week6/submissions/<github-username>/
 
 `problems/`、`.github/`、`scripts/` は編集しないでください。
 
-Rust の提出ディレクトリには、必ず次のファイルを置いてください。
-
-```text
-Cargo.toml
-src/lib.rs
-```
-
 Python の提出ディレクトリには、必ず次のファイルを置いてください。
 
 ```text
@@ -45,36 +38,45 @@ solution.py
 requirements.txt
 ```
 
-`secret-share-mpc` はサードパーティ製パッケージを必要としません。`requirements.txt` は空（またはコメントのみ）で提出してください。
+`co-snark-prove` はサードパーティ製パッケージを必要としません。`requirements.txt` は空
+（またはコメントのみ）で提出してください。`solution.py` 上部の支給済み秘密分散プリミティブは
+編集しないでください。
 
-## Rust テンプレートのコピー
+Rust の提出ディレクトリには、必ず次のファイルを置いてください。
 
-```bash
-mkdir -p week6/submissions/<github-username>/air-trace-check/rust
-cp -R week6/problems/air-trace-check/rust/template/. \
-  week6/submissions/<github-username>/air-trace-check/rust/
+```text
+Cargo.toml
+src/lib.rs
 ```
 
 ## Python テンプレートのコピー
 
 ```bash
-mkdir -p week6/submissions/<github-username>/secret-share-mpc/python
-cp -R week6/problems/secret-share-mpc/python/template/. \
-  week6/submissions/<github-username>/secret-share-mpc/python/
+mkdir -p week6/submissions/<github-username>/co-snark-prove/python
+cp -R week6/problems/co-snark-prove/python/template/. \
+  week6/submissions/<github-username>/co-snark-prove/python/
+```
+
+## Rust テンプレートのコピー
+
+```bash
+mkdir -p week6/submissions/<github-username>/zkvm-exploit/rust
+cp -R week6/problems/zkvm-exploit/rust/template/. \
+  week6/submissions/<github-username>/zkvm-exploit/rust/
 ```
 
 ## ローカルテスト
 
-Rust:
-
-```bash
-bash scripts/test-rust-submission.sh week6 air-trace-check <github-username>
-```
-
 Python:
 
 ```bash
-bash scripts/test-python-submission.sh week6 secret-share-mpc <github-username>
+bash scripts/test-python-submission.sh week6 co-snark-prove <github-username>
+```
+
+Rust:
+
+```bash
+bash scripts/test-rust-submission.sh week6 zkvm-exploit <github-username>
 ```
 
 ## Pull Request
