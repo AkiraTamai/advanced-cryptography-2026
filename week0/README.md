@@ -1,6 +1,7 @@
 # Week 0
 
-Week 0 は練習用・サンプル提出用です。以降の課題を提出する前に、このリポジトリでの提出手順を確認するために使います。
+> [!NOTE]
+> 講師の方へ: Week 0 は、課題作成のサンプルとして用意しています。問題文、Rust・Python の実装テンプレート、公開テスト、提出方法、CI の構成を確認する際にご参照ください。
 
 Week 0 の問題は次の 2 つです。
 
@@ -12,19 +13,19 @@ Week 0 の問題は次の 2 つです。
 Rust の `field-basics` は次の場所に提出してください。
 
 ```text
-week0/submissions/<github-username>/field-basics/rust/
+week0/submissions/{YOUR_GITHUB_USERNAME}/field-basics/rust/
 ```
 
 Python の `mod-arithmetic` は次の場所に提出してください。
 
 ```text
-week0/submissions/<github-username>/mod-arithmetic/python/
+week0/submissions/{YOUR_GITHUB_USERNAME}/mod-arithmetic/python/
 ```
 
 編集してよいのは次のディレクトリ以下だけです。
 
 ```text
-week0/submissions/<github-username>/
+week0/submissions/{YOUR_GITHUB_USERNAME}/
 ```
 
 `problems/`、`.github/`、`scripts/` は編集しないでください。
@@ -49,17 +50,17 @@ Python 課題の依存関係は、Rust の `Cargo.toml` と同じように提出
 ## Rust テンプレートのコピー
 
 ```bash
-mkdir -p week0/submissions/<github-username>/field-basics/rust
+mkdir -p week0/submissions/{YOUR_GITHUB_USERNAME}/field-basics/rust
 cp -R week0/problems/field-basics/rust/template/. \
-  week0/submissions/<github-username>/field-basics/rust/
+  week0/submissions/{YOUR_GITHUB_USERNAME}/field-basics/rust/
 ```
 
 ## Python テンプレートのコピー
 
 ```bash
-mkdir -p week0/submissions/<github-username>/mod-arithmetic/python
+mkdir -p week0/submissions/{YOUR_GITHUB_USERNAME}/mod-arithmetic/python
 cp -R week0/problems/mod-arithmetic/python/template/. \
-  week0/submissions/<github-username>/mod-arithmetic/python/
+  week0/submissions/{YOUR_GITHUB_USERNAME}/mod-arithmetic/python/
 ```
 
 ## ローカルテスト
@@ -67,13 +68,13 @@ cp -R week0/problems/mod-arithmetic/python/template/. \
 Rust:
 
 ```bash
-bash scripts/test-rust-submission.sh week0 field-basics <github-username>
+bash scripts/test-rust-submission.sh week0 field-basics {YOUR_GITHUB_USERNAME}
 ```
 
 Python:
 
 ```bash
-bash scripts/test-python-submission.sh week0 mod-arithmetic <github-username>
+bash scripts/test-python-submission.sh week0 mod-arithmetic {YOUR_GITHUB_USERNAME}
 ```
 
 ## Pull Request
@@ -81,7 +82,7 @@ bash scripts/test-python-submission.sh week0 mod-arithmetic <github-username>
 PR title は次の形式にしてください。
 
 ```text
-[week0] <github-username>
+[week0] {YOUR_GITHUB_USERNAME}
 ```
 
-CI が成功すれば、サンプル提出は完了です。
+CI が成功すれば、サンプル課題の提出フローを最後まで確認できています。
