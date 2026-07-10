@@ -135,3 +135,6 @@ git push
 ```
 
 同じ Pull Request が更新されるため、branch や Pull Request を作り直す必要はありません。
+
+> [!NOTE]
+> 講師の方へ: [Week 0](week0/README.md) は、課題作成のサンプルです。問題文、実装テンプレート、公開テスト、提出方法、CI の構成を確認する際にご参照ください。
