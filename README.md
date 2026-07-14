@@ -8,6 +8,13 @@ Advanced Cryptographyはゼロ知識証明の理論と実装の理解を促し�
 - 初めて課題を提出する方は、[「1. 初回だけ行う準備」](#1-初回だけ行う準備)から進めてください。
 - 2回目以降は、[「2. 課題ごとの提出手順」](#2-課題ごとの提出手順)から始めてください。
 
+## Week 6
+
+`week6` は Programmable Cryptography Stack Design（zkVM / vFHE / co-SNARK）の実装課題です。
+課題は Python の `co-snark-prove` と Rust の `zkvm-exploit` です。
+
+詳細は [`week6/README.md`](week6/README.md) を確認してください。
+
 > [!IMPORTANT]
 > コマンド内の `weekN` は提出する週に置き換えてください。波括弧で囲まれた値は自分の情報に置き換え、波括弧は入力しません。例えば、Week 1 を `alice` さんが提出する場合は `weekN` を `week1`、`{YOUR_GITHUB_USERNAME}` を `alice` に置き換えます。
 
