@@ -1,0 +1,64 @@
+name: Week 1 Tests
+
+on:
+  pull_request:
+    branches: [main]
+    paths:
+      - "week1/submissions/**"
+
+permissions:
+  contents: read
+  pull-requests: read
+
+concurrency:
+  group: week1-test-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  grade-week1:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    steps:
+      - name: Checkout PR head
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          fetch-depth: 0
+
+      - name: Install uv
+        uses: astral-sh/setup-uv@v5
+
+      - name: Validate and grade week1 submission
+        env:
+          BASE_REF: ${{ github.event.pull_request.base.ref }}
+          PR_USERNAME: ${{ github.event.pull_request.user.login }}
+        run: |
+          set -euo pipefail
+
+          git fetch --no-tags --depth=1 origin "$BASE_REF"
+
+          changed="$(mktemp)"
+          git diff --no-renames --name-only -z --diff-filter=ACMRTD \
+            "origin/$BASE_REF...HEAD" > "$changed"
+
+          user=""
+          while IFS= read -r -d '' f; do
+            case "$f" in
+              week1/submissions/"$PR_USERNAME"/solution.py)
+                user="$PR_USERNAME"
+                ;;
+              *)
+                echo "error: week1 submissions may only add" \
+                     "week1/submissions/$PR_USERNAME/solution.py (offending: $f)" >&2
+                exit 1
+                ;;
+            esac
+          done < "$changed"
+
+          if [ -z "$user" ]; then
+            echo "error: no week1/submissions/$PR_USERNAME/solution.py change found" >&2
+            exit 1
+          fi
+
+          uv run python week1/problems/grade.py "$PR_USERNAME"
