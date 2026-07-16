@@ -18,6 +18,28 @@ Advanced Cryptographyはゼロ知識証明の理論と実装の理解を促し�
 > [!IMPORTANT]
 > コマンド内の `weekN` は提出する週に置き換えてください。波括弧で囲まれた値は自分の情報に置き換え、波括弧は入力しません。例えば、Week 1 を `alice` さんが提出する場合は `weekN` を `week1`、`{YOUR_GITHUB_USERNAME}` を `alice` に置き換えます。
 
+## 0. 必要な環境
+
+GitHub を使うのが初めてでも進められるよう、最初に次を用意します。用意できたら
+「1. 初回だけ行う準備」へ進んでください。
+
+- **GitHub アカウント**: [github.com](https://github.com/) で無料作成できます。
+- **Git**（バージョン管理ツール）
+  - macOS: `xcode-select --install`、または `brew install git`
+  - Ubuntu / Debian: `sudo apt install git`
+  - Windows: [Git for Windows](https://gitforwindows.org/) を入れ、付属の **Git Bash** を使います
+  - 確認: `git --version`
+- **Python 3.10 以上**（課題は Python で解きます）
+  - macOS: `brew install python`、または [python.org](https://www.python.org/downloads/) のインストーラ
+  - Ubuntu / Debian: `sudo apt install python3 python3-venv`
+  - Windows: [python.org](https://www.python.org/downloads/) のインストーラ（"Add python.exe to PATH" にチェック）
+  - 確認: `python3 --version`
+- **GitHub CLI (`gh`)**（推奨）: 提出スクリプトが username の自動判定と PR 作成に使います
+  - インストール: [cli.github.com](https://cli.github.com/)、認証: `gh auth login`、確認: `gh --version`
+  - 無くても提出できます（username を引数で渡し、PR は GitHub の画面から作成）
+- **シェル**: 提出スクリプトは bash 用です。macOS / Linux はターミナルをそのまま使えます。
+  Windows は **Git Bash** または **WSL** を使ってください。
+
 ## 1. 初回だけ行う準備
 
 この章の操作は、最初の1回だけ行います。

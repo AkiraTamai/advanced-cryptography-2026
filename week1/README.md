@@ -36,6 +36,9 @@ requirements.txt
 
 ## 提出の流れ（スクリプト）
 
+> 事前に、Git・Python・（推奨）GitHub CLI が必要です。準備はリポジトリ直下の
+> README [「0. 必要な環境」](../README.md#0-必要な環境) を参照してください。
+
 github-username はスクリプトが自動判定します（`gh` または fork の `origin` から）。
 
 ```bash
