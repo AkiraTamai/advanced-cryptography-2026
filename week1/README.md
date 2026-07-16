@@ -34,27 +34,33 @@ requirements.txt
 編集してよいのは `week1/submissions/<github-username>/` 以下だけです。
 `problems/`、`.github/`、`scripts/` は編集しないでください。
 
-## テンプレートのコピー
+## 提出の流れ（スクリプト）
+
+github-username はスクリプトが自動判定します（`gh` または fork の `origin` から）。
 
 ```bash
+# 1. 提出フォルダとテンプレートを用意
+bash scripts/new-submission.sh week1 proof-of-exploit
+
+# 2. solution.py を実装し、テスト（コマンドは 1. の出力にも表示されます）
+bash scripts/test-python-submission.sh week1 proof-of-exploit <github-username>
+
+# 3. 提出（テストが通れば commit・push・PR 作成まで自動）
+bash scripts/submit.sh week1 proof-of-exploit
+```
+
+## 手動でやる場合
+
+```bash
+# テンプレートのコピー
 mkdir -p week1/submissions/<github-username>/proof-of-exploit/python
 cp -R week1/problems/proof-of-exploit/python/template/. \
   week1/submissions/<github-username>/proof-of-exploit/python/
-```
 
-## ローカルテスト
-
-```bash
+# テスト
 bash scripts/test-python-submission.sh week1 proof-of-exploit <github-username>
 ```
 
-## Pull Request
-
-PR title は次の形式にします。
-
-```text
-[week1] <github-username>
-```
-
-初回のみの準備（fork・clone・upstream 登録）と提出の手順は、リポジトリ直下の
-[README](../README.md) を参照してください。
+PR title は `[week1] <github-username>` の形式にします。初回のみの準備（fork・clone・
+upstream 登録）と提出手順の詳細は、リポジトリ直下の [README](../README.md) を参照して
+ください。
