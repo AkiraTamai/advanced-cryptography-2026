@@ -122,16 +122,10 @@ jobs:
           submissions = set()
           weeks = set()
           maintenance_files = set()
-          week1_files = set()
 
           for changed_file in changed_files:
               path = PurePosixPath(changed_file)
               parts = path.parts
-
-              # week1 uses a flat, single-file layout graded by week1-test.yml.
-              if len(parts) >= 2 and parts[0] == "week1" and parts[1] == "submissions":
-                  week1_files.add(changed_file)
-                  continue
 
               if is_trusted_maintenance_change(path):
                   maintenance_files.add(changed_file)
@@ -197,7 +191,7 @@ jobs:
               raise SystemExit("A PR must contain changes for exactly one week.")
 
           if not submissions:
-              if maintenance_files or week1_files:
+              if maintenance_files:
                   submissions_file_path.write_text("")
                   raise SystemExit(0)
 
