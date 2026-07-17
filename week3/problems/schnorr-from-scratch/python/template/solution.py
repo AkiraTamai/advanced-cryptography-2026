@@ -21,6 +21,7 @@ from given import (
     Point,
     challenge_hash,
     extended_gcd,
+    is_on_curve
 )
 
 
@@ -46,7 +47,7 @@ def field_inv(a: int, p: int) -> int:
     a が p の倍数(つまり F_p で 0)のときは逆元が存在しないので、
     ValueError を送出してください。
 
-    ヒント: given.extended_gcd(a % p, p) は (g, x, y) を返し、
+    ヒント: extended_gcd(a % p, p) は (g, x, y) を返し、
         (a % p) * x + p * y == g
     を満たします。g == 1 なら x が逆元です。ただし x は負のことが
     あるので注意してください。
@@ -62,6 +63,22 @@ def field_inv(a: int, p: int) -> int:
 def ec_add(P: Point, Q: Point, curve: Curve) -> Point:
     """楕円曲線上の点の足し算 P + Q です。
 
+    この課題の Point は (x, y) という 2 要素のタプル、または無限遠点を
+    表す None です。したがって、まず P と Q が INFINITY (= None) でない
+    ことを確認してから、次のように座標を取り出せます。
+
+        x_P, y_P = P  # アンパック: P[0], P[1] と書いても同じ
+        x_Q, y_Q = Q
+
+    逆に、計算した座標 x_R, y_R から Point を作るには、タプルにします。
+    座標は F_p の要素なので、剰余を取って 0..p-1 に正規化してください。
+
+        R: Point = (x_R % curve.p, y_R % curve.p)
+        return R
+
+    None かもしれない P や Q を先にアンパックするとエラーになるため、
+    下記 1. の無限遠点の処理を座標の取り出しより先に行うのが重要です。
+
     場合分けは次のとおりです。
       1. P が無限遠点なら Q を、Q が無限遠点なら P を返します
          (無限遠点が単位元です)。
@@ -69,19 +86,19 @@ def ec_add(P: Point, Q: Point, curve: Curve) -> Point:
          (P と Q が互いの逆元の場合です。P == Q で y == 0 の場合もここに
          含まれます)。
       3. P == Q なら 2 倍算です。接線の傾き
-             lam = (3*x_P^2 + a) / (2*y_P)
+             lam = (3*x_P**2 + a) / (2*y_P)
          を使います。
       4. それ以外は弦の傾き
              lam = (y_Q - y_P) / (x_Q - x_P)
          を使います。
     3. と 4. はどちらも、傾き lam から
-             x_R = lam^2 - x_P - x_Q
+             x_R = lam**2 - x_P - x_Q
              y_R = lam * (x_P - x_R) - y_P
     で (x_R, y_R) が求まります。割り算には Part 1 の field_inv を使って
     ください。
 
     計算結果が曲線から外れていたら、公式のどこか(たいていは y_R の符号)が
-    間違っています。given.is_on_curve(P, curve) で確かめられます。
+    間違っています。is_on_curve(P, curve) で確かめられます。
     """
     raise NotImplementedError
 
@@ -89,11 +106,17 @@ def ec_add(P: Point, Q: Point, curve: Curve) -> Point:
 def ec_scalar_mul(k: int, P: Point, curve: Curve) -> Point:
     """スカラー倍 k * P です(k は 0 以上の整数)。
 
-    ec_add を k 回繰り返す素朴な方法だと、secp256k1(k は最大 256 ビット)
-    では終わりません。double-and-add 法を使ってください。k を 2 進数で
+    ec_add を k 回繰り返す素朴な方法だと、kに比例した計算時間がかかってしまいます。
+    代わりにdouble-and-add 法を使うと高速化できます。k を 2 進数で
     見て下位ビットから順に、ビットが 1 なら答えに P の 2^i 倍を足します。
     P の 2^i 倍は 2 倍算の繰り返しで作れます。これで足し算の回数は
-    O(log k) に収まります。k == 0 のときは INFINITY を返してください。
+    O(log k) に収まります。k == 0 のときは INFINITY (None) を返してください。
+
+    ヒント: k を 2 で割った商と余りは、次のように同時に計算できます。
+
+        quotient, remainder = divmod(k, 2)
+
+    これは quotient = k // 2、remainder = k % 2 と同じです。
     """
     raise NotImplementedError
 
@@ -113,7 +136,10 @@ def ec_scalar_mul(k: int, P: Point, curve: Curve) -> Point:
 
 
 def sigma_commit(r: int, curve: Curve) -> Point:
-    """手番 1: ノンス r からコミットメント R = r * G を計算します。"""
+    """手番 1: ノンス r からコミットメント R = r * G を計算します。
+
+    ヒント: 生成元 G には curve.G としてアクセスできます。
+    """
     raise NotImplementedError
 
 
