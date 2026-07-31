@@ -1,6 +1,6 @@
 # Advanced Cryptography Program Output Themes
 
-> 本ページは Advanced Cryptography Program 2026 の成果物テーマ案を、受講生向けに整理したものです。各テーマについて「背景（なぜやるか）」と「方向性（どう解くか）」を簡潔に記載しています。
+> 本ページは Advanced Cryptography Program 2026 の成果物テーマ案を、受講生向けに整理したものです。
 
 ### Intmax
 
