@@ -2,16 +2,46 @@
 
 ## 概要
 
-マルチパーティ計算（MPC）のトイモデルを作り、秘密分散やshareを用いた計算の仕組みを習得します。また、秘匿回路に用いられる紛失通信（Oblivious Transfer; OT）を実装し、OTからBoolean MPCの秘密ANDゲートを構成します。
+マルチパーティ計算（MPC）のトイモデルを作り、秘密分散やシェアを用いた計算の仕組みを習得します。また、秘匿回路に用いられる紛失通信（Oblivious Transfer; OT）を実装し、OTからBoolean MPCの秘密ANDゲートを構成します。
 
 この週では、次の2種類の計算をコードで実装し比較します。
 
 - **Arithmetic MPC**: 有限体上の加法的秘密分散とBeaver tripleを用いる計算
 - **Boolean MPC**: XOR shareとOTを用いる秘匿回路の計算
 
+## 前提知識
+
+- Pythonの基本的な文法
+- 整数の剰余演算
+- Week 2 講義で扱う秘密分散、Beaver triple、OTの概要
+
+課題内で必要な式とプロトコルの手順は問題文にも記載しています。
+
 ## 課題
 
 <!-- 課題内容を追加 -->
+
+`solution.py`の関数を実装します。`NotImplementedError`をすべて実装してください。`tests/given.py`にある定数と補助関数は編集せずに利用できます。
+
+### Part A — Arithmetic MPC
+
+以下を実装します。
+
+- 加法的秘密分散と復元
+- share上のlocalな加算
+- Beaver tripleを用いた秘密値どうしの乗算
+
+Part Aでは、有限体上の加法的秘密分散を使うArithmetic MPCのトイモデルを実装します。実装する関数は次の4つです。
+
+```python
+share(secret, randomness, modulus)
+reconstruct(shares, modulus)
+add_shares(left_shares, right_shares, modulus)
+beaver_multiply(x_shares, y_shares, triple, modulus)
+```
+
+
+すべての値は有限体 `F_p` の要素として扱い、演算結果を `% modulus` で `0..modulus-1` に直してください。
 
 ## 採点
 
