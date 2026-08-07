@@ -43,6 +43,36 @@ beaver_multiply(x_shares, y_shares, triple, modulus)
 
 すべての値は有限体 `F_p` の要素として扱い、演算結果を `% modulus` で `0..modulus-1` に直してください。
 
+### Part B — Oblivious Transfer and Boolean MPC
+
+以下を実装します。
+
+- 有限群上の1-out-of-2 OT
+- XOR share上のlocal XOR
+- OTを2回用いたGMW型の秘密AND
+
+Part Bでは、Boolean MPCのトイモデルを実装します。OTを使ってGMW型の秘密ANDを構成します。実装する関数は次の4つです。
+
+```python
+ot_receiver_request(sender_public, choice, receiver_secret)
+
+ot_sender_encrypt(
+    sender_secret,
+    request,
+    message_0,
+    message_1,
+)
+
+ot_receiver_decrypt(
+    sender_public,
+    choice,
+    receiver_secret,
+    ciphertexts,
+)
+
+gmw_and(x_shares, y_shares, masks, ot_secrets)
+```
+
 ## 採点
 
 <!-- 採点内容を追加 -->
