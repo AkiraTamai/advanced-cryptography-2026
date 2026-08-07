@@ -10,7 +10,7 @@ Week 2 のテーマはマルチパーティ計算(MPC)です。MPCのトイモ�
 
 **Boolean MPC**
 - Oblivious Transfer（OT）の役割と仕組みを理解する。
-- ブール回路を秘匿回路（Garbled Circuit）で計算する代表的な Boolean MPC を理解する。
+- XOR秘密分散と紛失通信(Oblivious Transfer)を用いてブール回路を計算するGMW型の Boolean MPC を理解する。
 
 ## 演習問題
 

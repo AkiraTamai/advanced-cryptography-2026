@@ -48,8 +48,9 @@ beaver_multiply(x_shares, y_shares, triple, modulus)
 以下を実装します。
 
 - 有限群上の1-out-of-2 OT
-- XOR share上のlocal XOR
 - OTを2回用いたGMW型の秘密AND
+
+XOR share上のlocal XORには、提供済みの`xor_shares`を使用します。
 
 Part Bでは、Boolean MPCのトイモデルを実装します。OTを使ってGMW型の秘密ANDを構成します。実装する関数は次の4つです。
 
@@ -73,9 +74,13 @@ ot_receiver_decrypt(
 gmw_and(x_shares, y_shares, masks, ot_secrets)
 ```
 
-## 採点
+## 採点（`tests/public.py`、内容は公開）
 
-<!-- 採点内容を追加 -->
+1. **Part A — 秘密分散**: 秘密を正しくshareに分割・復元でき、有限体の要素として正規化される。
+2. **Part A — local加算**: 秘密を復元せずにshareどうしを加算でき、party数の不一致を拒否する。
+3. **Part A — Beaver乗算**: 2-partyおよび3-partyで積を正しく計算し、masked differenceの2値だけを公開する。
+4. **Part B — Oblivious Transfer**: receiverが選択した一方のメッセージを正しく復号でき、不正な入力を拒否する。
+5. **Part B — GMW AND**: すべてのXOR shareの組合せについて秘密ANDを正しく計算し、2回のOTを使用する。
 
 ## 提出先
 
