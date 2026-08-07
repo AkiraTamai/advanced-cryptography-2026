@@ -19,8 +19,6 @@
 
 ## 課題
 
-<!-- 課題内容を追加 -->
-
 `solution.py`の関数を実装します。`NotImplementedError`をすべて実装してください。`tests/given.py`にある定数と補助関数は編集せずに利用できます。
 
 ### Part A — Arithmetic MPC
@@ -40,6 +38,7 @@ add_shares(left_shares, right_shares, modulus)
 beaver_multiply(x_shares, y_shares, triple, modulus)
 ```
 
+> **重要:** Beaver triple `([a], [b], [c])` は、乗算ごとに新しいものを使用し、同じ triple を再利用してはいけません。同じ triple を2回使用すると、公開値 `d₁ = x₁ - a` と `d₂ = x₂ - a` から `x₁ - x₂ = d₁ - d₂` が分かり、秘密入力間の関係が漏れます。本課題のトイAPIは再利用を機械的には防止しないため、呼び出し側が一回限りの使用を守るものとします。
 
 すべての値は有限体 `F_p` の要素として扱い、演算結果を `% modulus` で `0..modulus-1` に直してください。
 
@@ -73,6 +72,8 @@ ot_receiver_decrypt(
 
 gmw_and(x_shares, y_shares, masks, ot_secrets)
 ```
+
+OTのsender secret `a` は `1..q-1`、receiver secret `b` は `0..q-1` から選びます。`b` をゼロを含む範囲から一様に選ぶことで、receiverのrequestはchoiceによらず同じ分布になります。
 
 ## 採点（`tests/public.py`、内容は公開）
 
@@ -115,4 +116,3 @@ bash scripts/submit.sh week2 toy-mpc
 - Python のみです。標準ライブラリだけで解けます（追加パッケージは不要）。
 - 編集してよいのは `week2/submissions/<github-username>/` 以下だけです。
 - `problems/`、`.github/`、`scripts/` は編集しないでください。
-<!-- 必要なルールがあれば追加 -->

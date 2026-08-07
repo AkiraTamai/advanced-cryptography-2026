@@ -12,7 +12,7 @@ import unittest
 from unittest import mock
 
 import solution
-from given import OT_P, derive_pad, xor_bytes
+from given import OT_P, OT_Q, derive_pad, xor_bytes
 
 
 MODULUS = 67
@@ -192,6 +192,8 @@ class PartB1ObliviousTransfer(unittest.TestCase):
         # A = 2^3 = 8 mod 23; g^4 = 16.
         sender_public = solution.ot_sender_setup(3)
         self.assertEqual(sender_public, 8)
+        self.assertEqual(solution.ot_receiver_request(sender_public, 0, 0), 1)
+        self.assertEqual(solution.ot_receiver_request(sender_public, 1, 0), 8)
         self.assertEqual(solution.ot_receiver_request(sender_public, 0, 4), 16)
         self.assertEqual(
             solution.ot_receiver_request(sender_public, 1, 4),
@@ -201,6 +203,8 @@ class PartB1ObliviousTransfer(unittest.TestCase):
     def test_both_choices_round_trip(self) -> None:
         messages = (b"left!", b"right")
         for choice, sender_secret, receiver_secret in [
+            (0, 3, 0),
+            (1, 3, 0),
             (0, 3, 4),
             (1, 3, 4),
             (0, 7, 2),
@@ -260,8 +264,32 @@ class PartB1ObliviousTransfer(unittest.TestCase):
                         4,
                         (b"x", b"y"),
                     )
-        with self.assertRaises(ValueError):
-            solution.ot_receiver_request(sender_public, 0, 0)
+        for receiver_secret in (-1, OT_Q):
+            with self.subTest(receiver_secret=receiver_secret):
+                with self.assertRaises(ValueError):
+                    solution.ot_receiver_request(
+                        sender_public,
+                        0,
+                        receiver_secret,
+                    )
+                with self.assertRaises(ValueError):
+                    solution.ot_receiver_decrypt(
+                        sender_public,
+                        0,
+                        receiver_secret,
+                        (b"x", b"y"),
+                    )
+        for sender_secret in (0, OT_Q):
+            with self.subTest(sender_secret=sender_secret):
+                with self.assertRaises(ValueError):
+                    solution.ot_sender_setup(sender_secret)
+                with self.assertRaises(ValueError):
+                    solution.ot_sender_encrypt(
+                        sender_secret,
+                        1,
+                        b"a",
+                        b"b",
+                    )
         with self.assertRaises(ValueError):
             solution.ot_sender_encrypt(3, 5, b"short", b"longer")
         with self.assertRaises(ValueError):

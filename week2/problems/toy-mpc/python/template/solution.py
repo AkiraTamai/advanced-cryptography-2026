@@ -14,7 +14,8 @@ from given import (
     derive_pad,
     validate_choice,
     validate_group_element,
-    validate_ot_scalar,
+    validate_receiver_scalar,
+    validate_sender_scalar,
     xor_bytes,
 )
 
@@ -153,7 +154,7 @@ def xor_shares(
 # ========================================================== PROVIDED OT setup
 def ot_sender_setup(sender_secret: int) -> int:
     """Return A = g^a mod p for sender secret a."""
-    validate_ot_scalar(sender_secret, "sender_secret")
+    validate_sender_scalar(sender_secret, "sender_secret")
     return pow(OT_G, sender_secret, OT_P)
 
 
@@ -166,6 +167,7 @@ def ot_receiver_request(
     """Build receiver request B.
 
     B = g^b for choice 0, and B = A*g^b for choice 1.
+    The receiver secret b is sampled from 0..q-1, including zero.
     """
     raise NotImplementedError
 

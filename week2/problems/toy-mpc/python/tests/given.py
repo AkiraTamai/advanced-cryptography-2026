@@ -19,9 +19,20 @@ def validate_choice(choice: int) -> None:
         raise ValueError("choice must be 0 or 1")
 
 
-def validate_ot_scalar(value: int, name: str = "OT scalar") -> None:
+def validate_sender_scalar(
+    value: int,
+    name: str = "sender scalar",
+) -> None:
     if not 1 <= value < OT_Q:
         raise ValueError(f"{name} must be in 1..{OT_Q - 1}")
+
+
+def validate_receiver_scalar(
+    value: int,
+    name: str = "receiver scalar",
+) -> None:
+    if not 0 <= value < OT_Q:
+        raise ValueError(f"{name} must be in 0..{OT_Q - 1}")
 
 
 def validate_group_element(value: int, name: str = "group element") -> None:
