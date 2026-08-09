@@ -100,7 +100,6 @@ def sub_shares(
         for left, right in zip(left_shares, right_shares)
     ]
 
-
 def scale_shares(
     shares: ShareVector,
     scalar: int,
@@ -124,15 +123,45 @@ def beaver_multiply(
     If triple = ([a], [b], [c]) with c = a*b, open exactly
 
         d = x-a,  e = y-b
+        x = d + a、y = e + b
 
     and compute
 
         [xy] = [c] + d[b] + e[a] + de.
+        x*y = (d+a)(e+b) = d*e + d*b + e*a + a*b = d*e + d*b + e*a + c
 
     Add the public term d*e to party 0 only.
     """
-    raise NotImplementedError
+    _validate_modulus(modulus)
+    a_shares, b_shares, c_shares = triple
+    _validate_same_share_count(
+        x_shares,
+        y_shares,
+        a_shares,
+        b_shares,
+        c_shares,
+    )
 
+    # [d] = [x] - [a]
+    d_shares = sub_shares(x_shares, a_shares, modulus)
+    # [e] = [y] - [b]
+    e_shares = sub_shares(y_shares, b_shares, modulus)
+
+    # round 2 -> 公開するのはdとeのみ
+    # 総和 mod p -> d = x - a
+    d = reconstruct(d_shares, modulus)
+    # 総和 mod p -> e = y - b
+    e = reconstruct(e_shares, modulus)
+
+    # 導出: x*y = (d+a)(e+b) = d*e + d*b + e*a + a*b = d*e + d*b + e*a + c
+    # c_i = a*bのshare, d * b_i(総和するとd*b), e * a_i(総和するとe*a)
+    # コメント「Add the public term d*e to party 0 only」 -> (d * e if index == 0 else 0) 公開値の定数(d*e) ≠ (n * d*e)のため
+    return [
+        (c_i + d * b_i + e * a_i + (d * e if index == 0 else 0)) % modulus
+        for index, (a_i, b_i, c_i) in enumerate(
+            zip(a_shares, b_shares, c_shares)
+        )
+    ]
 
 # ========================================================== PROVIDED XOR MPC
 def xor_share(bit: int, mask: int) -> tuple[int, int]:
