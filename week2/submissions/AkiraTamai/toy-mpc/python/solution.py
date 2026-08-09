@@ -58,13 +58,19 @@ def share(secret: int, randomness: list[int], modulus: int) -> ShareVector:
     The values in `randomness` are the first shares. Return canonical field
     elements in 0..modulus-1. At least two parties are required.
     """
-    raise NotImplementedError
-
+    _validate_modulus(modulus)
+    # 0..p-1 の正規形（canonical form) -> randomnessはp以上の値も負数も受け入れる
+    normalized = [value % modulus for value in randomness]
+    final = (secret - sum(normalized)) % modulus
+    shares = normalized + [final]
+    _validate_same_share_count(shares)
+    return shares
 
 def reconstruct(shares: ShareVector, modulus: int) -> int:
     """Open additive shares and return the canonical field element."""
-    raise NotImplementedError
-
+    _validate_modulus(modulus)
+    _validate_same_share_count(shares)
+    return sum(shares) % modulus
 
 # ================================================================ Part A2
 def add_shares(
