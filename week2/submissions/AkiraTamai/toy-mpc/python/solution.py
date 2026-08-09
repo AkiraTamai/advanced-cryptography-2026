@@ -79,8 +79,12 @@ def add_shares(
     modulus: int,
 ) -> ShareVector:
     """Add two shared values component-wise without opening them."""
-    raise NotImplementedError
-
+    _validate_modulus(modulus)
+    _validate_same_share_count(left_shares, right_shares)
+    return [
+        (left + right) % modulus
+        for left, right in zip(left_shares, right_shares)
+    ]
 
 # ---------------------------------------------------------- PROVIDED helpers
 def sub_shares(
