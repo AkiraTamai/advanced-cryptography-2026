@@ -2,6 +2,10 @@
 
 Week 2 のテーマはマルチパーティ計算(MPC)です。MPCのトイモデルを作り、秘密分散やシェアを用いた計算の仕組みを習得します。また、秘匿回路に用いられる紛失通信（Oblivious Transfer; OT）を実装し、OTからBoolean MPCの秘密ANDゲートを構成します。
 
+## 講義資料
+
+- [Week 2 スライド](https://acp26-week2-presentation-agent.zk-tokyo-japan.workers.dev/1)
+
 ## この週のゴール
 
 **Arithmetic MPC**

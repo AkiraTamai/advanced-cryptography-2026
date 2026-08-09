@@ -3,6 +3,10 @@
 Week 1 のテーマは Programmable Cryptography の全体像です。ZK・MPC・FHE に共通する
 土台である「算術回路」を、小さな Python のライブラリで実際に組み立てて理解します。
 
+## 講義資料
+
+- [Week 1 スライド](https://acp26-week1-presentation-agent.kingmasatojames.workers.dev/1)
+
 ## この週のゴール
 
 - 回路とは「すべて 0 になるべき制約の集まり」であること、witness とは「各信号に
