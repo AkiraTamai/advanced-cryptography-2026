@@ -354,5 +354,59 @@ def gmw_and(
 
     `ot_secrets` contains (sender_secret, receiver_secret) for session 01 and
     session 10, in that order.
+
+
+    x = x0 ^ x1、y = y0 ^ y1
+    P0:(x0, y0), P1:(x1, y1)
+
+    x & y = (x0^x1) & (y0^y1) = x0y0 ^ x0y1 ^ x1y0 ^ x1y1
+    x0y1(x0はP0、y1はP1)とx1y0は一方のみで計算不可
+    1-out-of-2 OTで双方のshareに分けて計算するのがgmwのAND -> OTを2回行い解を導出
     """
-    raise NotImplementedError
+
+    _validate_bit_shares(x_shares, "x_shares")
+    _validate_bit_shares(y_shares, "y_shares")
+    _validate_bit_shares(masks, "masks")
+    if len(ot_secrets) != 2:
+        raise ValueError("ot_secrets must contain exactly two sessions")
+
+    # 本来各パーティが毎回生成する
+    r01, r10 = masks
+
+    # session01の送信者(P0)のsecretと受信者(P1)のsecret
+    sender_01, receiver_01 = ot_secrets[0]
+    # session10の送信者(P0)のsecretと受信者(P1)のsecret
+    sender_10, receiver_10 = ot_secrets[1]
+
+
+    # message_0はr、message_1はr ^ x_i、choiceは相手のshare y_i、送信者のsecretと受信者のsecret
+    # y1 = 0 -> r01, y1 = 1 -> r01 ^ x0 -> t1: r01 ^ (x0 & y1)
+    # P0はy1 unknown, P1はx0 unknown -> x0y1 -> P0:r01とP1:t1 -> xor share
+    t1 = _ot_transfer_bit(
+        r01,
+        r01 ^ x_shares[0],
+        y_shares[1],
+        sender_01,
+        receiver_01,
+    )
+
+    t0 = _ot_transfer_bit(
+        r10,
+        r10 ^ x_shares[1],
+        y_shares[0],
+        sender_10,
+        receiver_10,
+    )
+
+    # 各パーティの出力share
+    # t1 = r01 ^ (x0 & y1)
+    # t0 = r10 ^ (x1 & y0)
+    # (x0 & y0) ^ r01 ^ t0 -> P0: x0y0(local) ^ r01(session01で送信者）^ t0(session10で受信者)
+    # (x1 & y1) ^ r10 ^ t1 -> P1: x1y1(local) ^ r10(session10で送信者）^ t1(session01で受信者)
+    # x & y = (x0^x1) & (y0^y1) = x0y0 ^ x0y1 ^ x1y0 ^ x1y1
+    # x0y0はP0がlocal, x1y1はP1がlocal, x0y1は(r01 ^ t1)から復元, x1y0は(r10 ^ t0)から復元
+    # -> x0y0 ^ x1y1 ^ (r01 ^ t1) ^ (r10 ^ t0) = x0y0 ^ x1y1 ^ (x0 & y1) ^ (x1 & y0) = x & y
+    return (
+        (x_shares[0] & y_shares[0]) ^ r01 ^ t0,
+        (x_shares[1] & y_shares[1]) ^ r10 ^ t1,
+    )
