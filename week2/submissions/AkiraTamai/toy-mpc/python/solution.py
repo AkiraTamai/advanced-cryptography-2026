@@ -208,9 +208,26 @@ def ot_receiver_request(
     B = g^b for choice 0, and B = A*g^b for choice 1.
     The receiver secret b is sampled from 0..q-1, including zero.
     """
-    raise NotImplementedError
+    # check (1 <= A < 23 かつ A^11 ≡ 1 (mod 23))?
+    validate_group_element(sender_public, "sender_public")
 
+    # check choiceが0か1か
+    # {g^b : b=0..10}, {A·g^b : b=0..10} -> 同じ部分群全体。choiceに寄らずBの分布が一様
+    validate_choice(choice)
 
+    # check bは0..10の範囲か
+    validate_receiver_scalar(receiver_secret, "receiver_secret")
+
+    # g^b mod p
+    blinded = pow(OT_G, receiver_secret, OT_P)
+
+    if choice == 0:
+        # B = g^b mod p
+        return blinded
+        # B = (A · g^b) mod p
+    return sender_public * blinded % OT_P
+
+# 1-out-of-2 OTの送信者側暗号化関数
 def ot_sender_encrypt(
     sender_secret: int,
     request: int,
@@ -222,9 +239,42 @@ def ot_sender_encrypt(
     Derive the branch-0 key from B^a and the branch-1 key from (B/A)^a.
     Use derive_pad(shared, branch, length), then xor_bytes(message, pad).
     """
-    raise NotImplementedError
 
+    # check 1 <= a < 11（1..10
+    validate_sender_scalar(sender_secret, "sender_secret")
 
+    # check Bが位数11の部分群の元でなければerror -> (1 <= B < 23 かつ B^11 mod 23 == 1)
+    validate_group_element(request, "request")
+
+    #  2つのメッセージ長が同じでなければ、XORパッドの長さが合わなくなるのでエラー
+    if len(message_0) != len(message_1):
+        raise ValueError("messages must have the same length")
+
+    # A = g^a mod p
+    sender_public = ot_sender_setup(sender_secret)
+
+    # branch-0の「B^a mod p」
+    shared_0 = pow(request, sender_secret, OT_P)
+
+    # Aの逆元である「A^{-1} mod 23」
+    inverse = pow(sender_public, -1, OT_P)
+
+    # B * A^{-1} = B/A mod p -> (B/A)^a mod p
+    shared_1 = pow(request * inverse % OT_P, sender_secret, OT_P)
+
+    # shared_0とbranch-0、len(message_0) からパッド(擬似乱数バイト列)を作り(derive_pad)、平文message_0をXOR暗号化(xor_bytes)
+    ciphertext_0 = xor_bytes(
+        message_0,
+        derive_pad(shared_0, 0, len(message_0)),
+    )
+    # shared_1とbranch-1、len(message_1) からパッド(擬似乱数バイト列)を作り、平文message_0をXOR暗号化
+    ciphertext_1 = xor_bytes(
+        message_1,
+        derive_pad(shared_1, 1, len(message_1)),
+    )
+    return ciphertext_0, ciphertext_1
+
+# 1-out-of-2 OTの受信者側復号関数
 def ot_receiver_decrypt(
     sender_public: int,
     choice: int,
@@ -232,8 +282,28 @@ def ot_receiver_decrypt(
     ciphertexts: tuple[bytes, bytes],
 ) -> bytes:
     """Decrypt the selected OT ciphertext using A^b."""
-    raise NotImplementedError
+    validate_group_element(sender_public, "sender_public")
+    validate_choice(choice)
+    validate_receiver_scalar(receiver_secret, "receiver_secret")
+    if len(ciphertexts) != 2:
+        raise ValueError("ciphertexts must contain exactly two messages")
+    selected = ciphertexts[choice]
 
+    # A^b mod p -> A^b = (g^a)^b = g^{a·b} = g^{ab} -> A^b mod p = g^{ab} mod p
+    # ex. if a = 5、b = 3の場合、
+    # A = g^a = 2^5 mod 23 = 32 mod 23 = 9
+    # shared = A^b = 9^3 mod 23 = 729 mod 23 = 16
+    # g^{ab} = 2^{15} mod 23 = 32768 mod 23 = 16
+    shared = pow(sender_public, receiver_secret, OT_P)
+
+    # sharedとどちらのbranchをchoice、len(selected)からパッド(擬似乱数バイト列)を生成(送信者側のpadを再現)
+    pad = derive_pad(shared, choice, len(selected))
+
+    # ciphertextと同じパッド padで再度XORして平文に戻す
+    # 例
+    # ciphertext = 平文 XOR pad
+    # 平文    = ciphertext XOR pad
+    return xor_bytes(selected, pad)
 
 # ---------------------------------------------------------- PROVIDED OT glue
 def _ot_transfer_bit(
