@@ -1,4 +1,6 @@
 __pycache__/
 *.pyc
 
-week5/submissions/test/
+# macOS metadata
+.DS_Store
+._*
