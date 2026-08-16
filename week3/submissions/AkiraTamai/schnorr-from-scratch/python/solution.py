@@ -33,12 +33,12 @@ from given import (
 
 def field_add(a: int, b: int, p: int) -> int:
     """F_p での足し算です。(a + b) mod p を 0..p-1 の範囲で返してください。"""
-    raise NotImplementedError
+    return (a + b) % p
 
 
 def field_mul(a: int, b: int, p: int) -> int:
     """F_p での掛け算です。(a * b) mod p を 0..p-1 の範囲で返してください。"""
-    raise NotImplementedError
+    return (a * b) % p
 
 
 def field_inv(a: int, p: int) -> int:
@@ -52,8 +52,16 @@ def field_inv(a: int, p: int) -> int:
     を満たします。g == 1 なら x が逆元です。ただし x は負のことが
     あるので注意してください。
     """
-    raise NotImplementedError
+    a %= p
+    if a == 0:
+        raise ValueError(f"F_pで0の逆元は存在しません(p = {p})")
 
+    g, x, _y = extended_gcd(a, p)
+    if g != 1:
+        raise ValueError(f"{a}のmod{p}での逆元ではありません(gcd = {g})")
+
+    # extended_gcdのxは負のことがあるので0..p-1に正規化(modで取り直し)
+    return x % p
 
 # =================================================================== Part 2
 # 楕円曲線 y^2 = x^3 + a*x + b over F_p の群演算です。
