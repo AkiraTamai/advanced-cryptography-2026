@@ -108,8 +108,43 @@ def ec_add(P: Point, Q: Point, curve: Curve) -> Point:
     計算結果が曲線から外れていたら、公式のどこか(たいていは y_R の符号)が
     間違っています。is_on_curve(P, curve) で確かめられます。
     """
-    raise NotImplementedError
 
+    if P is INFINITY:
+        return Q
+    if Q is INFINITY:
+        return P
+
+    p = curve.p
+    x_P, y_P = P[0] % p, P[1] % p
+    x_Q, y_Q = Q[0] % p, Q[1] % p
+
+    if x_P == x_Q and (y_P + y_Q) % p == 0:
+        # P = -Q(y == 0の2倍算もここに含まれる)。
+        return INFINITY
+
+    # P = Qの点倍算
+    if x_P == x_Q and y_P == y_Q:
+        # 分子 (3*x_P**2 + a) <- 点倍算の公式
+        # Weierstrass normal formの簡略形であるy² = x³ + ax + bの点Pの2倍算時の接線公式と同様の利用
+        numerator = field_add(field_mul(3, field_mul(x_P, x_P, p), p), curve.a, p)
+        # 分母 (2*y_P)
+        denominator = field_mul(2, y_P, p)
+    else:
+        # 分子 (y_Q - y_P)
+        numerator = (y_Q - y_P) % p
+        # 分母 (x_Q - x_P)
+        denominator = (x_Q - x_P) % p
+
+    # 割り算は有限体の逆元で表現 -> λを導出
+    lam = field_mul(numerator, field_inv(denominator, p), p)
+
+    # P + Q = (x3, y3) の座標
+    # x_R = lam**2 - x_P - x_Q
+    x_R = (field_mul(lam, lam, p) - x_P - x_Q) % p
+    # y_R = lam * (x_P - x_R) - y_P
+    y_R = (field_mul(lam, x_P - x_R, p) - y_P) % p
+
+    return (x_R, y_R)
 
 def ec_scalar_mul(k: int, P: Point, curve: Curve) -> Point:
     """スカラー倍 k * P です(k は 0 以上の整数)。
@@ -126,7 +161,26 @@ def ec_scalar_mul(k: int, P: Point, curve: Curve) -> Point:
 
     これは quotient = k // 2、remainder = k % 2 と同じです。
     """
-    raise NotImplementedError
+
+    if k < 0:
+        raise ValueError("kは0以上の整数で渡してください")
+
+    result: Point = INFINITY
+    addend: Point = P
+    while k > 0:
+        # 残りのビット列: k = k // 2、最下位ビット: bit = k % 2
+        # ループごとにkは半減する。有限回で0になり、while k > 0から離脱
+        k, bit = divmod(k, 2)
+        if bit:
+            # bitが1の時だけ、2^i·P(Pの2^i 倍のスカラー倍点)を加算
+            # i=1なら2P=P+P、i=2なら4P=2P+2P、i=3なら8P…。2倍算をi回繰り返して得られる点
+            result = ec_add(result, addend, curve)
+        if k > 0:
+            # 2^i·P → 2^(i+1)·P
+            # addendを2倍算してaddendを2^(i+1)·Pに更新する
+            addend = ec_add(addend, addend, curve)
+
+    return result
 
 
 # =================================================================== Part 3
