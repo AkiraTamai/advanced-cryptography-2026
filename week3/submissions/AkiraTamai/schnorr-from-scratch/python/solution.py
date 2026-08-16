@@ -202,7 +202,7 @@ def sigma_commit(r: int, curve: Curve) -> Point:
 
     ヒント: 生成元 G には curve.G としてアクセスできます。
     """
-    raise NotImplementedError
+    return ec_scalar_mul(r % curve.n, curve.G, curve)
 
 
 def sigma_response(x: int, r: int, e: int, curve: Curve) -> int:
@@ -212,7 +212,7 @@ def sigma_response(x: int, r: int, e: int, curve: Curve) -> int:
     mod は curve.n(G の位数)で取ります。curve.p と取り違えやすいので
     注意してください。
     """
-    raise NotImplementedError
+    return (r + e * x) % curve.n
 
 
 def sigma_verify(pubkey: Point, R: Point, e: int, s: int, curve: Curve) -> bool:
@@ -221,8 +221,9 @@ def sigma_verify(pubkey: Point, R: Point, e: int, s: int, curve: Curve) -> bool:
     これで確認になっている理由(完全性):
         s * G = (r + e*x) * G = r*G + e*(x*G) = R + e * pubkey
     """
-    raise NotImplementedError
-
+    left = ec_scalar_mul(s % curve.n, curve.G, curve)
+    right = ec_add(R, ec_scalar_mul(e % curve.n, pubkey, curve), curve)
+    return left == right
 
 def schnorr_sign(
     x: int, message: bytes, nonce: int, curve: Curve
