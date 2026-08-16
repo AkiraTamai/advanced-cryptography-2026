@@ -246,8 +246,17 @@ def schnorr_sign(
     (tests/public.py の nonce 再利用テスト参照)。この課題ではテストの
     再現性のため、引数で受け取る作りにしています。
     """
-    raise NotImplementedError
+    # R = r*G
+    R = sigma_commit(nonce, curve)
 
+    # pubkey = x * G
+    pubkey = ec_scalar_mul(x % curve.n, curve.G, curve)
+
+    e = challenge_hash(R, pubkey, message, curve.n)
+
+    # s = r(=nonce) + e*x mod n -> Part3で実装したsigma_responseを使う
+    s = sigma_response(x, nonce, e, curve)
+    return (R, s)
 
 def schnorr_verify(
     pubkey: Point, message: bytes, signature: tuple[Point, int], curve: Curve
@@ -259,7 +268,9 @@ def schnorr_verify(
     を自分で計算し直し、s * G == R + e * pubkey を確認してください
     (sigma_verify がそのまま使えます)。
     """
-    raise NotImplementedError
+    R, s = signature
+    e = challenge_hash(R, pubkey, message, curve.n)
+    return sigma_verify(pubkey, R, e, s, curve)
 
 
 # =================================================================== 簡易チェック
