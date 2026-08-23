@@ -72,6 +72,7 @@ class UnivariatePolynomial(Polynomial):
 
     e.g.)
         [c_0, c_, ..., c_d] = c_0 + c_*x + ... + c_d*x^d
+        例: [4, 3] は4+3x
     """
     def __init__(
         self,
@@ -98,9 +99,26 @@ class UnivariatePolynomial(Polynomial):
         
         Returns:
             Evaluation result
-        """
-        raise NotImplementedError("Please implement this method.")
 
+        今回のケースでsum(c * x**i for i, c in enumerate(...))とすると、
+        x^0, x^1, x^2... を個別に計算して乗算回数がO(d²)となるが、
+        以下の方法だとO(d)になる
+        (1つのべき乗だけならO(log e)、d次多項式全体の評価ならO(d)が下限)
+        """
+        result = 0
+        # 前提のデータ構造として係数リストは低次から順に並ぶ
+        # [c_0, c_, ..., c_d] = c_0 + c_*x + ... + c_d*x^d
+        # 多項式は入れ子の形に書き換え可能 -> 内側から外側へ計算
+        # c₀ + c₁x + c₂x² + c₃x³ = c₀ + x·(c₁ + x·(c₂ + x·c₃))
+        for coef in reversed(self.coefficients):
+            # ex. 2 + 3x + 5x²でxが4の場合
+            # c₀ + c₁x + c₂x² = c₀ + x·(c₁ + x·c₂)
+            # 2 + 3x + 5x² = 2 + x·(3 + x·5)
+            # result = 0·4 + 5 = 5（c₂)
+            # result = 5·4 + 3 = 23（c₂·x + c₁）
+            # result = 23·4 + 2 = 94（c₂·x² + c₁·x + c₀)
+            result = result * x + coef
+        return self.reduce(result)
 
 class SumCheck:
     """Class representing SumCheck protocol.
