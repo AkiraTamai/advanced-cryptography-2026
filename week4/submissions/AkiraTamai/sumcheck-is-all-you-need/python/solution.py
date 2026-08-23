@@ -174,7 +174,7 @@ class SumCheck:
           g_i(t) = Σf(r₁, ..., r{i-1}, t, x{i+1}, ..., x_n)
 
           test caseのf(x, y) = xy + x + 2、p=17、ラウンド1、challenges=[]
-          ラウンド1の多項式：g₁(t) = Σ{y∈{0,1}} f(t, y) = f(t, 0) + f(t, 1)_
+          ラウンド1の多項式：g₁(t) = Σ{y∈{0,1}} f(t, y) = f(t, 0) + f(t, 1)
           f(t, 0) = t*0 + t + 2 = t + 2
           f(t, 1) = t*1 + t + 2 = 2t + 2
           合計: g₁(t) = 3t + 4 → 係数リストを定数から記載[4, 3]
@@ -228,7 +228,23 @@ class SumCheck:
         Returns:
             Proof (a list of tuples of round polynomial g_i(t) and random challenge r_i)
         """
-        raise NotImplementedError("Please implement this method.")
+        if challenges is None:
+            challenges = [random.randrange(self.p) for _ in range(self.n)]
+
+        # README: 全てのラウンド分の証明をまとめて生成するため、
+        # Prover が g_i を送る → Verifier が r_i を返す → Prover が次の g_{i+1} を作る往復は行わない
+        proof = []
+        # nラウンド分ループ
+        for i in range(self.n):
+            # i=0、g₁(t) = Σf(t, x₂, ..., x_n) -> (g₁, r₁)を追加
+            # i=1、g₂(t) = Σf(r₁, t, x₃, ..., x_n) -> (g₂, r₂)を追加
+            # ...1変数ずつチャレンジ値で固定、操作毎に残りを一変数多項式に置き換え
+            # n変数のfは変数が多くてそのままでは扱いにくいので、
+            # 各ラウンドでn個の変数を役割ごとに処理してt以外を全部消す操作
+            # なおチャレンジ値がg_iに依存せず事前に決まるのはREADME前提から(Verifierの乱数など不使用)
+            g_i = self.construct_round_polynomial(challenges[:i])
+            proof.append((g_i, challenges[i]))
+        return proof
 
     def verify(
         self,
@@ -244,8 +260,41 @@ class SumCheck:
         Returns:
             True if succeeded, false otherwise
         """
-        raise NotImplementedError("Please implement this method.")
+        # README: 全てのラウンド分の証明をまとめて検証することが前提で以下
+        # ラウンド数は変数の個数nと一致していなければ不正な証明
+        if len(proof) != self.n:
+            return False
+        # 初期値は主張された総和のmod pで正規化後の値
+        expected = self.f.reduce(claimed_sum)
+        for g_i, r_i in proof:
+            # g_i(0) + g_i(1)と期待値が一致するかどうかチェック
+            # ラウンド1 -> g₁(0)+g₁(1) = expected
+            # ラウンド2 -> g₂(0)+g₂(1) = g₁(r₁)
+            # ・・・ -> g{i+1}(0)+g{i+1}(1) = g_i(r_i)
+            if self.f.reduce(g_i.evaluate(0) + g_i.evaluate(1)) != expected:
+                return False
+            expected = g_i.evaluate(r_i)
 
+        # expected = g_n(r_n)なので、全変数を (r₁, ..., r_n)に固定したfの値のclaim
+        # そのためverifierはf自体を1点だけ直接評価して突き合わせ(検証者が実物のfに触れて検証するのはここから)
+        #
+        # ex. f = xy + x + 2、p=17、claimed_sum=11、challenges=[3,5]
+        # proof -> [(g₁, r₁), (g₂, r₂)] -> [(g₁, 3), (g₂, 5)]
+        #
+        # prover側(construct_round_polynomial)により、
+        # ラウンド1. g₁ = 4+3t: g₁(0)+g₁(1) = 4+7 = 11 → expected = g₁(3) = 13
+        #.(g₁(t) = Σ_{y∈{0,1}} f(t, y) = f(t, 0) + f(t, 1) -> g₁(t) = 4+3t)
+        #
+        # ラウンド2. g₂ = 5+3t: g₂(0)+g₂(1) = 5+8 = 13 → expected = g₂(5) = 20 ≡ 3 (mod 17)
+        # (g₂(t) = f(3, t) = 3t + 3 + 2 = 5 + 3t -> g₂(0) + g₂(1) はラウンと1のexpected 13と一致)
+        # (next expected = g₂(5) = 5 + 3·5 = 20 ≡ 3 (mod 17))
+        #
+        # f(3, 5) の直接評価 ->  f(3, 5) = xy + x + 2 -> 15+3+2 = 20 ≡ 3 (mod 17) → True
+        #
+        # 仮にnが大きいときでも、証明のサイズとラウンド数はnに比例して増えない
+        # 2^n個の点の総和の検証をせずとも、nペアの証明チェックとfの1点評価に置き換える操作(SumCheck)
+        challenges = tuple(r for _, r in proof)
+        return expected == self.f.evaluate(challenges)
 
 if __name__ == "__main__":
     # f = x*y + x + 2
