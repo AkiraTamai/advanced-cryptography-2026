@@ -165,18 +165,18 @@ class SumCheck:
         for exponents, coeff in self.f.terms.items():
             result_fixed = 1
             for challenge, exp in zip(challenges,exponents[:len(challenges)]):
-                result_fixed *= challenge ** exp
+                result_fixed *= (challenge ** exp) % self.p
             rest = exponents[len(challenges)+ 1:]
             result_rest = 0
             for point in self.gen_boolean_points(len(rest)):
                 point_value = 1
                 for value, exp in zip(point, rest):
-                    point_value *= value ** exp
+                    point_value *= (value ** exp ) % self.p
                 result_rest += point_value
             t_exp = exponents[len(challenges)]
             if max_exp < t_exp:
                 max_exp = t_exp
-            results_dic[t_exp] = results_dic.get(t_exp, 0) + result_fixed * result_rest * coeff
+            results_dic[t_exp] = (results_dic.get(t_exp, 0) + result_fixed * result_rest * coeff) % self.p
         results = []
         for i in range(max_exp + 1):
             results.append(results_dic.get(i,0))
@@ -192,6 +192,10 @@ class SumCheck:
         Returns:
             Proof (a list of tuples of round polynomial g_i(t) and random challenge r_i)
         """
+        # challenges がNoneの場合
+        if challenges is None:
+            challenges = [random.randrange(self.p) for _ in range(self.n)]
+    
         results = []
         for i in range(len(challenges)):
             gi_t = self.construct_round_polynomial(challenges[:i])
