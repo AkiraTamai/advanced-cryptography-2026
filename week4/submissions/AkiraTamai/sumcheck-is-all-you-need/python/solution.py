@@ -52,8 +52,17 @@ class Polynomial:
         Returns:
             Evaluation result
         """
-        raise NotImplementedError("Please implement this method.")
-
+        result = 0
+        # ex {(1,1): 1, (1,0): 1, (0,0): 2} -> (1,1), 1 ・・・
+        for exp, coef in self.terms.items():
+            term = coef
+            for x, e in zip(point, exp):
+                # term = term × x₁^e₁ × x₂^e₂ × ・・・
+                # x^e mod pで既にmod pにより0...p-1で各べき乗の値は正規化済みだがterm *=結果やのちの+では未保証
+                term *= pow(x, e, self.p)
+            result += term
+        # 有限体 F_p の正規化(ここで非負が保証される)
+        return self.reduce(result)
 
 class UnivariatePolynomial(Polynomial):
     """Class representing a univariate polynomial.
