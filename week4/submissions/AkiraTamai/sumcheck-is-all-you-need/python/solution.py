@@ -170,6 +170,14 @@ class SumCheck:
 
     def construct_round_polynomial(self, challenges: list[int]) -> UnivariatePolynomial:
         """Constructs the round polynomial g_i(t) = Σf(r_1, ..., r_{i-1}, t, x_{i+1}, ..., x_n).
+        　ラウンド多項式 g_i(t): ラウンドiで証明者が送る一変数多項式
+          g_i(t) = Σf(r₁, ..., r{i-1}, t, x{i+1}, ..., x_n)
+
+          test caseのf(x, y) = xy + x + 2、p=17、ラウンド1、challenges=[]
+          ラウンド1の多項式：g₁(t) = Σ{y∈{0,1}} f(t, y) = f(t, 0) + f(t, 1)_
+          f(t, 0) = t*0 + t + 2 = t + 2
+          f(t, 1) = t*1 + t + 2 = 2t + 2
+          合計: g₁(t) = 3t + 4 → 係数リストを定数から記載[4, 3]
 
         Args:
             challenges: fixed random challenge values
@@ -177,7 +185,39 @@ class SumCheck:
         Returns:
             Univariate polynomial for a single round
         """
-        raise NotImplementedError("Please implement this method.")
+        # ラウンド1ならchallenges=[]でi=0
+        i = len(challenges)
+
+        # g_iのtに関する次数は全項の中での第i変数の最大指数
+        degree = max(exponents[i] for exponents in self.f.terms)
+
+        # その分の係数配列を0で用意
+        coefficients = [0] * (degree + 1)
+
+        # fの項ごとに、g_iへの寄与を計算
+        # 各項は、「係数 × x₁^e₁ × ... × x_n^e_n」の形式と考えると、
+        for exponents, coefficient in self.f.terms.items():
+            term = coefficient
+            # 固定変数をr_j^e_j
+            for r, e in zip(challenges, exponents[:i]):
+                term *= pow(r, e, self.p)
+            # 変数ごとに独立に {0,1} の和を取れるので、
+            # Σ_{x∈{0,1}} x^e = 0^e + 1^e = 2 if e == 0 else 1
+            for e in exponents[i + 1:]:
+                # e ≥ 1なら、0+1 = 1 -> 乗算しても変わらずno-op
+                # e = 0なら、1+1 = 2
+                if e == 0:
+                    term *= 2
+            # tは、term × t^(e_i)、f のその項の寄与
+            # 次数e_iの係数スロットに加算するのは、fの複数の項が同じ次数のtに寄与(同類項まとめ)。
+            # なお寄与しない場合はただの代入になる想定
+            coefficients[exponents[i]] += term
+
+        # 各係数をmod pして正規化。一変数多項式
+        return UnivariatePolynomial(
+            coefficients=[c % self.p for c in coefficients],
+            p=self.p
+        )
 
     def prove(self, challenges:list[int] | None = None) -> list[tuple[UnivariatePolynomial, int]]:
         """Generates a proof.
