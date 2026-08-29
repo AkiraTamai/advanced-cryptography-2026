@@ -68,10 +68,10 @@ class Polynomial:
         """Curries the polynomial by fixing some variables.
 
         Args:
-            fixed_values: fixed values for the first k variables
+            fixed_values: fixed values for some variables (key: variable index, value: fixed value)
         
         Returns:
-            A new polynomial with the first k variables fixed
+            A new polynomial with specified fixed variables
         """
         new_terms = {}
         assert all(i >= 0 and value < self.p for i, value in fixed_values.items()), "Fixed values must be less than p."
