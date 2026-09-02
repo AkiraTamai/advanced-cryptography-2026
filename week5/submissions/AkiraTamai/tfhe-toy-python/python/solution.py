@@ -280,10 +280,18 @@ def encrypt_lwe(
     params: ToyTFHEParams,
     rng: random.Random,
 ) -> LWECiphertext:
-    """delta*m を LWE 暗号文として暗号化する。"""
-    # TODO:
-    # LWE暗号の暗号化を実装する
-    raise NotImplementedError("encrypt_lwe を実装してください")
+    """delta*m を LWE 暗号文として暗号化する。
+
+    aを「Z_q^k」から一様に選び、eを「{0, ..., noise_bound}」から選び、
+    「b = <a, s> + Delta*m + e mod q」とする。
+    """
+    a_vector: list[int] = []
+    for _ in range(params.k):
+        a_vector.append(rng.randrange(params.q))
+    error = rng.randrange(params.noise_bound + 1)
+    inner = dot_mod(a_vector, secret_key, params.q)
+    b_value = normalize(inner + scaled_message + error, params.q)
+    return LWECiphertext(a=a_vector, b=b_value)
 
 
 def decrypt_lwe(
@@ -291,10 +299,15 @@ def decrypt_lwe(
     secret_key: list[int],
     params: ToyTFHEParams,
 ) -> int:
-    """LWE 暗号文を復号する。"""
-    # TODO:
-    # LWE暗号の復号を実装する
-    raise NotImplementedError("decrypt_lwe を実装してください")
+    """LWE 暗号文を復号する。
+
+    「b - <a, s> mod q = Delta*m + e」を計算して、
+    Deltaの倍数へ丸めてZ_pの平文mを返す
+    """
+    inner = dot_mod(ciphertext.a, secret_key, params.q)
+    scaled_message_with_noise = normalize(ciphertext.b - inner, params.q)
+    rounded_plaintext = (scaled_message_with_noise + params.delta // 2) // params.delta
+    return normalize(rounded_plaintext, params.p)
 
 
 def lwe_add(
@@ -303,9 +316,12 @@ def lwe_add(
     params: ToyTFHEParams,
 ) -> LWECiphertext:
     """LWE 暗号文同士を足す。"""
-    # TODO:
-    # LWE 暗号文同士の加算を実装する
-    raise NotImplementedError("lwe_add を実装してください")
+    new_a: list[int] = []
+    for index in range(len(left.a)):
+        value = normalize(left.a[index] + right.a[index], params.q)
+        new_a.append(value)
+    new_b = normalize(left.b + right.b, params.q)
+    return LWECiphertext(a=new_a, b=new_b)
 
 
 def lwe_sub(
@@ -328,9 +344,11 @@ def lwe_scalar_mul(
     params: ToyTFHEParams,
 ) -> LWECiphertext:
     """LWE 暗号文にスカラーを掛ける。"""
-    # TODO:
-    # LWE 暗号文のスカラー倍を実装する
-    raise NotImplementedError("lwe_scalar_mul を実装してください")
+    new_a: list[int] = []
+    for value in ciphertext.a:
+        new_a.append(normalize(scalar * value, params.q))
+    new_b = normalize(scalar * ciphertext.b, params.q)
+    return LWECiphertext(a=new_a, b=new_b)
 
 
 def encrypt_rlwe(
