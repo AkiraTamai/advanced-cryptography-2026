@@ -499,10 +499,14 @@ def gadget_decompose(value: int, params: ToyTFHEParams) -> list[int]:
     29 = 1*(32/2) + 1*(32/4) + 1*(32/8) + 0*(32/16) + 1*(32/32)
     なので g^{-1}(29) = [1, 1, 1, 0, 1] になる。
     """
-    # TODO: value を q/B, q/B^2, ..., q/B^l の各桁に分解する。
+    # NOTE: value を q/B, q/B^2, ..., q/B^l の各桁に分解する。
     # 各桁は 0 以上 B 未満にし、上位の桁から順番に返す。
-    raise NotImplementedError("gadget_decompose を実装してください")
-
+    normalized_value = normalize(value, params.q)
+    digits: list[int] = []
+    for weight in gadget_weights(params):
+        digit = (normalized_value // weight) % params.B
+        digits.append(digit)
+    return digits
 
 def gadget_decompose_poly(poly: list[int], params: ToyTFHEParams) -> list[list[int]]:
     """多項式の各係数を gadget decomposition する。
@@ -602,12 +606,27 @@ def external_product(
     入力 RLWE が平文 M(X) を暗号化し、RGSW が bit を暗号化しているなら、
     出力は bit * M(X) の RLWE 暗号文になる。
     """
-    # TODO:
+    # NOTE:
     # 1. ciphertext の a(X) と b(X) を Gadget Decomposition する。
     # 2. 各桁の多項式を、対応する RGSW 暗号文の行に掛ける。
     # 3. 得られた RLWE 暗号文をすべて加算する。
-    raise NotImplementedError("external_product を実装してください")
+    # 所与のパラメータでparams.lは5のためガード処理などはあえて未記載
+    decomposed_a = gadget_decompose_poly(ciphertext.a, params)
+    decomposed_b = gadget_decompose_poly(ciphertext.b, params)
 
+    result = RLWECiphertext(a=zero_poly(params), b=zero_poly(params))
+    for j in range(params.l):
+        result = rlwe_add(
+            result,
+            rlwe_plain_mul(control.rows_for_a[j], decomposed_a[j], params),
+            params,
+        )
+        result = rlwe_add(
+            result,
+            rlwe_plain_mul(control.rows_for_b[j], decomposed_b[j], params),
+            params,
+        )
+    return result
 
 def cmux(
     control: RGSWCiphertext,
@@ -616,9 +635,11 @@ def cmux(
     params: ToyTFHEParams,
 ) -> RLWECiphertext:
     """暗号化された bit によって 2 つの RLWE 暗号文を選ぶ。"""
-    # TODO: CMUX(c_b,c_0,c_1)=c_b external_product (c_1-c_0)+c_0
+    # NOTE: CMUX(c_b,c_0,c_1)=c_b external_product (c_1-c_0)+c_0
     # に対応する暗号文演算を実装する。
-    raise NotImplementedError("cmux を実装してください")
+    difference = rlwe_sub(true_ciphertext, false_ciphertext, params)
+    selected = external_product(control, difference, params)
+    return rlwe_add(selected, false_ciphertext, params)
 
 
 def make_bootstrapping_key(
