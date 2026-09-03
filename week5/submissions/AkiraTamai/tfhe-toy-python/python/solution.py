@@ -738,24 +738,37 @@ def blind_rotate(
     Z_q 上へ配置する。その後、X^(-b_hat + <a_hat,s>) v(X) の
     RLWE 暗号文を作る。
     """
-    # TODO:
+    # NOTE:
     # 1. LWE 暗号文を Z_q から Z_{2N} へリスケーリングする。
     # 2. テスト多項式を X^{-b_hat} 倍した自明な RLWE 暗号文を作る。
     # 3. 各 a_hat_i について、暗号化された s_i を制御bitとする
     #    CMUXを適用し、X^{a_hat_i}倍するかどうかを選ぶ。
-    raise NotImplementedError("blind_rotate を実装してください")
+    rescaled = rescale_lwe_ciphertext(ciphertext, params)
 
+    scaled_test_polynomial = scale_plaintext_poly(test_polynomial, params)
+    accumulator = trivial_rlwe(scaled_test_polynomial, params)
+    accumulator = rlwe_monomial_mul(accumulator, -rescaled.b, params)
+
+    for index in range(params.k):
+        a_hat = rescaled.a[index]
+        encrypted_key_bit = bootstrapping_key.encrypted_lwe_key_bits[index]
+        rotated = rlwe_monomial_mul(accumulator, a_hat, params)
+        accumulator = cmux(encrypted_key_bit, accumulator, rotated, params)
+    return accumulator
 
 def sample_extract(
     ciphertext: RLWECiphertext,
     params: ToyTFHEParams,
 ) -> LWECiphertext:
     """RLWE 暗号文の定数項を LWE 暗号文として取り出す。"""
-    # TODO:
+    # NOTE:
     # a''=(a'_0,-a'_{N-1},...,-a'_1), b''=b'_0
     # に対応する LWE 暗号文を作る。
-    raise NotImplementedError("sample_extract を実装してください")
-
+    extracted_a: list[int] = [ciphertext.a[0]]
+    for index in range(1, params.n):
+        coefficient = -ciphertext.a[params.n - index]
+        extracted_a.append(normalize(coefficient, params.q))
+    return LWECiphertext(a=extracted_a, b=ciphertext.b[0])
 
 def key_switch(
     ciphertext: LWECiphertext,
@@ -763,12 +776,21 @@ def key_switch(
     params: ToyTFHEParams,
 ) -> LWECiphertext:
     """Sample Extraction 後の LWE 暗号文を元の LWE 鍵へ変換する。"""
-    # TODO:
+    # NOTE:
     # 1. (0,b'') から計算を始める。
     # 2. a'' の各係数を Gadget Decomposition する。
     # 3. 各桁と対応する Key Switching Key を掛け、結果から引く。
-    raise NotImplementedError("key_switch を実装してください")
-
+    result = trivial_lwe(ciphertext.b, params)
+    for index in range(len(ciphertext.a)):
+        digits = gadget_decompose(ciphertext.a[index], params)
+        rows_for_coefficient = key_switching_key.encrypted_extracted_key[index]
+        for j in range(len(digits)):
+            digit = digits[j]
+            if digit == 0:
+                continue
+            scaled_row = lwe_scalar_mul(rows_for_coefficient[j], digit, params)
+            result = lwe_sub(result, scaled_row, params)
+    return result
 
 def programmable_bootstrap(
     ciphertext: LWECiphertext,
@@ -776,8 +798,18 @@ def programmable_bootstrap(
     params: ToyTFHEParams,
 ) -> LWECiphertext:
     """Blind Rotation、Sample Extraction、Key Switching を順に行う。"""
-    raise NotImplementedError("programmable_bootstrap を実装してください")
+    test_polynomial: list[int] = []
+    for coefficient in params.nand_test_polynomial:
+        test_polynomial.append(coefficient)
 
+    rotated = blind_rotate(
+        ciphertext,
+        test_polynomial,
+        evaluation_key.bootstrapping_key,
+        params,
+    )
+    extracted = sample_extract(rotated, params)
+    return key_switch(extracted, evaluation_key.key_switching_key, params)
 
 def hom_nand(
     left: LWECiphertext,
@@ -786,11 +818,13 @@ def hom_nand(
     params: ToyTFHEParams,
 ) -> LWECiphertext:
     """TFHE の HomNAND をナイーブに実行する。"""
-    # TODO:
+    # NOTE:
     # 1. 暗号文のまま Z_p 上の 1-m_1-m_2 を行う。
     # 2. 線形前処理後の暗号文を Programmable Bootstrapping へ渡す。
-    raise NotImplementedError("hom_nand を実装してください")
-
+    constant = trivial_lwe_plaintext(params.hom_nand_constant, params)
+    linear = lwe_sub(constant, left, params)
+    linear = lwe_sub(linear, right, params)
+    return programmable_bootstrap(linear, evaluation_key, params)
 
 if __name__ == "__main__":
     params = ToyTFHEParams()
